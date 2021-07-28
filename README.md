@@ -1,2 +1,1 @@
-# ptdiag
-Parallel Timing Diagram
+# PTDiag: Parallel Timing Diagram
