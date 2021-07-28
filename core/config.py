@@ -1,0 +1,3 @@
+CONSOLE_WIDTH = 100
+
+BLOCK = "█"
