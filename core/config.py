@@ -1,3 +1,5 @@
+ADDRESS = ("", 64530)
+
 CONSOLE_WIDTH = 100
 
 BLOCK = "█"
