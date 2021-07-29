@@ -96,10 +96,10 @@ class PTDiag(BaseManager):
 
         current_time = time_ns()
 
-        y = 0
+        y = 1.5 * len(self._ptp_map)
         for name, (pairs, lt_on) in self._ptp_map.items():
             self.format_y(name, pairs, lt_on.value, current_time, y)
-            y += 1.5
+            y -= 1.5
         
         plt.legend(loc="best")
 
