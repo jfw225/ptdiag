@@ -1,5 +1,9 @@
+import matplotlib.pyplot as plt
+import numpy as np
 from multiprocessing.managers import BaseManager, SyncManager
 from multiprocessing import Process, Manager
+from random import random
+from pickle import dump
 
 from time import time_ns, sleep
 
@@ -64,6 +68,48 @@ class PTDiag(BaseManager):
         s += " " * n
 
         return s + "|: " + name
+
+    def format_y(self, name, pairs, lt_on, ct, y):
+        """ Formats the y positions on the timing diagram for a PTProcess. """
+
+        # Shallow copy of pairs
+        pairs = [x for x in pairs]
+
+        duration = ct - self._start
+        off_since = self._start
+        
+        if lt_on != 0:
+            pairs.append((lt_on, ct))
+
+        color = (random(), random(), random())
+        for ont, offt in pairs:
+            plt.hlines(y, off_since, ont, color=color)
+            plt.vlines(ont, y, y + 1, color=color)
+            plt.hlines(y + 1, ont, offt, color=color)
+            plt.vlines(offt, y, y + 1, color=color)
+            off_since = offt
+        
+        plt.hlines(y, off_since, ct, color=color, label=name)
+
+
+    def graph(self, save=False):
+        """ Graphs the timing diagram. """
+
+        current_time = time_ns()
+        x = np.arange(self._start, current_time, dtype=np.int8)
+
+        y = 0
+        for name, (pairs, lt_on) in self._ptp_map.items():
+            self.format_y(name, pairs, lt_on.value, current_time, y)
+            y += 1.5
+        
+        plt.legend(loc="best")
+
+        if save:
+            fig = plt.gcf()
+            dump(fig, open("figure.pkl", "wb"))
+        else:
+            plt.show()
 
     def __str__(self):
         """ Formats the timing diagram in a readable way. """
