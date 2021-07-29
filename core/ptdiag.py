@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 from multiprocessing.managers import BaseManager, SyncManager
 from multiprocessing import Process, Manager
 from random import random
@@ -96,7 +95,6 @@ class PTDiag(BaseManager):
         """ Graphs the timing diagram. """
 
         current_time = time_ns()
-        x = np.arange(self._start, current_time, dtype=np.int8)
 
         y = 0
         for name, (pairs, lt_on) in self._ptp_map.items():
