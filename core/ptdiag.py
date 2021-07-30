@@ -34,13 +34,15 @@ class PTDiag(BaseManager):
         self.ax_rates = plt.subplot2grid((2, 3), (1, 2), colspan=1)
         # self.ax_stats_table = plt.subplot2grid((2, 5), (1, 3), colspan=2)
 
-    def reg_proc(self, name):
+    def reg_proc(self, name, ptp_id):
         """ Called when PTProcess is instantiated. Registers PTProcess 
         attributes in controller. """
         
         pairs = self.m.list()
         lt_on = self.m.Value("i", 0)
-        self._ptp_map[name] = (pairs, lt_on)
+        if ptp_id is None or ptp_id in self._ptp_map:
+            ptp_id = len(self._ptp_map)
+        self._ptp_map[ptp_id] = (name, pairs, lt_on)
 
         return (pairs, lt_on)
 
@@ -109,7 +111,8 @@ class PTDiag(BaseManager):
 
         self._finish = self._finish or time_ns()
         stats = list()
-        for name, (pairs, lt_on) in self._ptp_map.items():
+        for i in range(len(self._ptp_map)):
+            name, pairs, lt_on = self._ptp_map[i]
             if lt_on.value != 0:
                 pairs.append((lt_on.value, self._finish))
             
@@ -139,7 +142,8 @@ class PTDiag(BaseManager):
         self._finish = self._finish or time_ns()
 
         y = 1.5 * len(self._ptp_map)
-        for name, (pairs, lt_on) in self._ptp_map.items():
+        for i in range(len(self._ptp_map)):
+            name, pairs, lt_on = self._ptp_map[i]
             self.create_ptp_lines(name, pairs, lt_on.value, self._finish, y)
             y -= 1.5
         
