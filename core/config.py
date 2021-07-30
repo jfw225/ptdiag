@@ -1,9 +1,5 @@
 ADDRESS = ("", 64530)
 
-CONSOLE_WIDTH = 100
-
-BLOCK = "█"
-
 class PLT:
     FIG_SAVE = "PTD"
     PTD_ID = 100

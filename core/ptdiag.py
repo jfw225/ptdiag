@@ -14,8 +14,7 @@ from ptdiag.core.ptprocess import PTProcess
 class PTDiag(BaseManager):
     """ Parallel Timing Diagram Controller """
 
-    def __init__(self, console_width=cfg.CONSOLE_WIDTH):
-        self._cw = console_width
+    def __init__(self):
         self._start = time_ns()
         self._finish = None
 
@@ -82,32 +81,6 @@ class PTDiag(BaseManager):
         """ Calls plt.show(). """
 
         plt.show()
-    
-    def format(self, name, pairs, lt_on, ct):
-        """ Formats a process's timing diagram. """
-
-        # Shallow copy of pairs
-        pairs = [x for x in pairs]
-
-        duration = ct - self._start
-        off_since = self._start
-        
-        if lt_on != 0:
-            pairs.append((lt_on, ct))
-
-        s = ""
-        # for ont, offt in self._pairs:
-        for ont, offt in pairs:
-            n = int(((ont - off_since) / duration) * self._cw)
-            s += " " * n
-            n = int(((offt - ont) / duration) * self._cw)
-            s += cfg.BLOCK * n
-            off_since = offt
-        
-        n = int(((ct - off_since) / duration) * self._cw)
-        s += " " * n
-
-        return s + "|: " + name
 
     def create_ptp_lines(self, name, pairs, lt_on, ft, y):
         """ Creates the lines on the timing diagram for a PTProcess. """
@@ -195,8 +168,8 @@ class PTDiag(BaseManager):
         self.ax_edges.set_title("Number of Edges")
 
         # Times
-        times_on = np.array(times_on) / 1e9
-        times_off = np.array(times_off) / 1e9
+        times_on = np.around(np.array(times_on) / 1e9, decimals=2)
+        times_off = np.around(np.array(times_off) / 1e9, decimals=2)
         times_on_bar = self.ax_times.bar(x - (width - .15) / 2, times_on, (width - .15), label="On")
         times_off_bar = self.ax_times.bar(x + (width - .15) / 2, times_off, (width - .15), label="Off")
         self.ax_times.bar_label(times_on_bar, padding=2)
@@ -208,8 +181,8 @@ class PTDiag(BaseManager):
         self.ax_times.legend()
 
         # Rates
-        rates_on = np.array(rates_on) * 1e9
-        rates_off = np.array(rates_off) * 1e9
+        rates_on = np.around(np.array(rates_on) * 1e9, decimals=2)
+        rates_off = np.around(np.array(rates_off) * 1e9, decimals=2)
         rates_on_bar = self.ax_rates.bar(x - (width - .15) / 2, rates_on, (width - .15), label="On")
         rates_off_bar = self.ax_rates.bar(x + (width - .15) / 2, rates_off, (width - .15), label="Off")
         self.ax_rates.bar_label(rates_on_bar, padding=2)
@@ -230,15 +203,12 @@ class PTDiag(BaseManager):
 
 
     def __str__(self):
-        """ Formats the timing diagram in a readable way. """
+        """ Formats the timing diagram statistics in a readable way. """
 
         s = ""
-        current_time = time_ns()
-
-        for name, (pairs, lt_on) in self._ptp_map.items():
-            s += self.format(name, pairs, lt_on.value, current_time) + "\n"
-        # for ptp in self._processes:
-        #     s += ptp.format(self._cw, self._start, current_time) + "\n"
+        for name, num_edges, time_on, time_off, rate_on, rate_off in self.get_stats():
+            s += f"{name}: {num_edges} edges | {time_on/1e9} s on, {time_off/1e9} s off"
+            s += f" | {rate_on*1e9} e/s on, {rate_off*1e9} e/s off\n"
 
         return s
         
