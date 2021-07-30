@@ -29,11 +29,11 @@ class PTDiag(BaseManager):
 
         # self.figure, (self.ax_ptd, self.ax_lower) = plt.subplots(nrows=2)
         # self.lower_fig, axs = self.ax_lower.add_subplot(nrows=1, ncols=0)
-        self.ax_ptd = plt.subplot2grid((2, 5), (0, 0), colspan=5)
-        self.ax_edges = plt.subplot2grid((2, 5), (1, 0), colspan=1)
-        self.ax_times = plt.subplot2grid((2, 5), (1, 1), colspan=1)
-        self.ax_rates = plt.subplot2grid((2, 5), (1, 2), colspan=1)
-        self.ax_stats_table = plt.subplot2grid((2, 5), (1, 3), colspan=2)
+        self.ax_ptd = plt.subplot2grid((2, 3), (0, 0), colspan=5)
+        self.ax_edges = plt.subplot2grid((2, 3), (1, 0), colspan=1)
+        self.ax_times = plt.subplot2grid((2, 3), (1, 1), colspan=1)
+        self.ax_rates = plt.subplot2grid((2, 3), (1, 2), colspan=1)
+        # self.ax_stats_table = plt.subplot2grid((2, 5), (1, 3), colspan=2)
 
     def reg_proc(self, name):
         """ Called when PTProcess is instantiated. Registers PTProcess 
