@@ -111,8 +111,8 @@ class PTDiag(BaseManager):
 
         self._finish = self._finish or time_ns()
         stats = list()
-        for i in range(len(self._ptp_map)):
-            name, pairs, lt_on = self._ptp_map[i]
+        for ptp_id in range(len(self._ptp_map)):
+            name, pairs, lt_on = self._ptp_map[ptp_id]
             if lt_on.value != 0:
                 pairs.append((lt_on.value, self._finish))
             
@@ -130,7 +130,7 @@ class PTDiag(BaseManager):
             rate_on = num_edges / time_on if time_on else 0
             rate_off = num_edges / time_off if time_on else 0
 
-            stats.append((name, num_edges, time_on, time_off, rate_on, rate_off))
+            stats.append((name, ptp_id, num_edges, time_on, time_off, rate_on, rate_off))
         
         return stats
 
@@ -158,7 +158,7 @@ class PTDiag(BaseManager):
         print("Generating PTD Stats Bar Graph...")
 
         stats = self.get_stats()
-        names, num_edges, times_on, times_off, rates_on, rates_off = zip(*stats)
+        names, ptp_ids, num_edges, times_on, times_off, rates_on, rates_off = zip(*stats)
         
         x = np.arange(len(names))
         width = 0.5
@@ -210,8 +210,9 @@ class PTDiag(BaseManager):
         """ Formats the timing diagram statistics in a readable way. """
 
         s = ""
-        for name, num_edges, time_on, time_off, rate_on, rate_off in self.get_stats():
-            s += f"{name}: {num_edges} edges | {time_on/1e9} s on, {time_off/1e9} s off"
+        for name, ptp_id, num_edges, time_on, time_off, rate_on, rate_off in self.get_stats():
+            s += f"Name: {name} & PTP ID: {ptp_id} -- {num_edges} edges"
+            s += f" | {time_on/1e9} s on, {time_off/1e9} s off"
             s += f" | {rate_on*1e9} e/s on, {rate_off*1e9} e/s off\n"
 
         return s
