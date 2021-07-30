@@ -203,7 +203,7 @@ class PTDiag(BaseManager):
         self.ax_times.bar_label(times_off_bar, padding=2)
         self.ax_times.set_ylabel("Time (s)")
         self.ax_times.set_xticks(x)
-        self.ax_times.set_xticklabels(names)
+        self.ax_times.set_xticklabels(names, rotation=45)
         self.ax_times.set_title("Time Spent")
         self.ax_times.legend()
 
@@ -216,7 +216,7 @@ class PTDiag(BaseManager):
         self.ax_rates.bar_label(rates_off_bar, padding=2)
         self.ax_rates.set_ylabel("Rate (edge / s)")
         self.ax_rates.set_xticks(x)
-        self.ax_rates.set_xticklabels(names)
+        self.ax_rates.set_xticklabels(names, rotation=45)
         self.ax_rates.set_title("Edge Rate")
         self.ax_rates.legend()
 
