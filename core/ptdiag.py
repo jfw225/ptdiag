@@ -191,7 +191,7 @@ class PTDiag(BaseManager):
         self.ax_edges.bar_label(edges_bar, padding=2)
         self.ax_edges.set_ylabel("n")
         self.ax_edges.set_xticks(x)
-        self.ax_edges.set_xticklabels(names)
+        self.ax_edges.set_xticklabels(names, rotation=45)
         self.ax_edges.set_title("Number of Edges")
 
         # Times
