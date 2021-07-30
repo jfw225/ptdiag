@@ -211,9 +211,11 @@ class PTDiag(BaseManager):
 
         s = ""
         for name, ptp_id, num_edges, time_on, time_off, rate_on, rate_off in self.get_stats():
+            time_on, time_off, rate_on, rate_off = np.around(
+                [time_on/1e9, time_off/1e9, rate_on*1e9, rate_off*1e9], decimals=2)
             s += f"Name: {name} & PTP ID: {ptp_id} -- {num_edges} edges"
-            s += f" | {time_on/1e9} s on, {time_off/1e9} s off"
-            s += f" | {rate_on*1e9} e/s on, {rate_off*1e9} e/s off\n"
+            s += f" | {time_on} s on, {time_off} s off"
+            s += f" | {rate_on} e/s on, {rate_off} e/s off\n"
 
         return s
         
