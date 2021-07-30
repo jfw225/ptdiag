@@ -151,8 +151,8 @@ class PTDiag(BaseManager):
             
             time_off += self._finish - off_since
             
-            rate_on = num_edges / time_on
-            rate_off = num_edges / time_off
+            rate_on = num_edges / time_on if time_on else 0
+            rate_off = num_edges / time_off if time_on else 0
 
             stats.append((name, num_edges, time_on, time_off, rate_on, rate_off))
         
