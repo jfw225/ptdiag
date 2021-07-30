@@ -195,8 +195,8 @@ class PTDiag(BaseManager):
         self.ax_edges.set_title("Number of Edges")
 
         # Times
-        times_on = np.array(times_on) / 10e9
-        times_off = np.array(times_off) / 10e9
+        times_on = np.array(times_on) / 1e9
+        times_off = np.array(times_off) / 1e9
         times_on_bar = self.ax_times.bar(x - (width - .15) / 2, times_on, (width - .15), label="On")
         times_off_bar = self.ax_times.bar(x + (width - .15) / 2, times_off, (width - .15), label="Off")
         self.ax_times.bar_label(times_on_bar, padding=2)
@@ -208,8 +208,8 @@ class PTDiag(BaseManager):
         self.ax_times.legend()
 
         # Rates
-        rates_on = np.array(rates_on) * 10e9
-        rates_off = np.array(rates_off) * 10e9
+        rates_on = np.array(rates_on) * 1e9
+        rates_off = np.array(rates_off) * 1e9
         rates_on_bar = self.ax_rates.bar(x - (width - .15) / 2, rates_on, (width - .15), label="On")
         rates_off_bar = self.ax_rates.bar(x + (width - .15) / 2, rates_off, (width - .15), label="Off")
         self.ax_rates.bar_label(rates_on_bar, padding=2)
