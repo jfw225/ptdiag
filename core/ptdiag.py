@@ -34,7 +34,7 @@ class PTDiag(BaseManager):
         self.ax_rates = plt.subplot2grid((2, 3), (1, 2), colspan=1)
         # self.ax_stats_table = plt.subplot2grid((2, 5), (1, 3), colspan=2)
 
-    def reg_proc(self, name, ptp_id):
+    def reg_proc(self, name, ptp_id, extra):
         """ Called when PTProcess is instantiated. Registers PTProcess 
         attributes in controller. """
         
@@ -42,7 +42,7 @@ class PTDiag(BaseManager):
         lt_on = self.m.Value("i", 0)
         if ptp_id is None or ptp_id in self._ptp_map:
             ptp_id = len(self._ptp_map)
-        self._ptp_map[ptp_id] = (name, pairs, lt_on)
+        self._ptp_map[ptp_id] = (name, pairs, lt_on, extra)
 
         return (pairs, lt_on)
 
@@ -84,19 +84,22 @@ class PTDiag(BaseManager):
 
         plt.show()
 
-    def create_ptp_lines(self, name, pairs, lt_on, ft, y):
+    def create_ptp_lines(self, name, pairs, lt_on, y):
         """ Creates the lines on the timing diagram for a PTProcess. """
 
-        # Shallow copy of pairs
-        pairs = [x for x in pairs]
+        ## Start and finish times are specificed by first pair
+        assert len(pairs) > 0, f"Error: PTProcess has no pairs stored. | Name: {name}, Pairs: {pairs}"
+        off_since, finish = pairs[0]
+        pairs = pairs[1:]
 
-        duration = ft - self._start
-        off_since = self._start
-        
         if lt_on != 0:
             pairs.append((lt_on, ft))
 
         color = (random(), random(), random())
+
+        ## Add label
+        self.ax_ptd.hlines(y, off_since, off_since, color=color, label=name)
+
         for ont, offt in pairs:
             self.ax_ptd.hlines(y, off_since, ont, color=color)
             self.ax_ptd.vlines(ont, y, y + 1, color=color)
@@ -104,28 +107,38 @@ class PTDiag(BaseManager):
             self.ax_ptd.vlines(offt, y, y + 1, color=color)
             off_since = offt
         
-        self.ax_ptd.hlines(y, off_since, ft, color=color, label=name)
+        if finish > off_since:
+            self.ax_ptd.hlines(y, off_since, finish, color=color)
 
-    def get_stats(self):
+    def get_stats(self, graph=False):
         """ Generates and returns PTD statistics. """
 
         self._finish = self._finish or time_ns()
         stats = list()
         for ptp_id in range(len(self._ptp_map)):
-            name, pairs, lt_on = self._ptp_map[ptp_id]
-            if lt_on.value != 0:
-                pairs.append((lt_on.value, self._finish))
+            name, pairs, lt_on, extra = self._ptp_map[ptp_id]
+            if graph and extra.get(PTProcess.KWARGS.EXCLUDE_FROM_GRAPH):
+                continue
             
             num_edges = len(pairs)
             time_on = time_off = 0
 
-            off_since = self._start
+            ## Start and finish times are specificed by first pair
+            assert len(pairs) > 0, f"Error: PTProcess has no pairs stored. | Name: {name}, Pairs: {pairs}"
+            off_since, finish = pairs[0]
+            pairs = pairs[1:]
+
+            if lt_on.value != 0:
+                pairs.append((lt_on.value, self._finish))
+
             for ont, offt in pairs:
                 time_off += ont - off_since
                 time_on += offt - ont
                 off_since = offt
             
-            time_off += self._finish - off_since
+            ##
+            if finish > off_since:
+                time_off += finish - off_since
             
             rate_on = num_edges / time_on if time_on else 0
             rate_off = num_edges / time_off if time_on else 0
@@ -141,11 +154,12 @@ class PTDiag(BaseManager):
         # fig = plt.figure(cfg.PLT.PTD_ID)
         self._finish = self._finish or time_ns()
 
-        y = 1.5 * len(self._ptp_map)
+        y = cfg.PLT.PTD_SPACING * len(self._ptp_map)
         for i in range(len(self._ptp_map)):
-            name, pairs, lt_on = self._ptp_map[i]
-            self.create_ptp_lines(name, pairs, lt_on.value, self._finish, y)
-            y -= 1.5
+            name, pairs, lt_on, extra = self._ptp_map[i]
+            if not extra.get(PTProcess.KWARGS.EXCLUDE_FROM_GRAPH):
+                self.create_ptp_lines(name, pairs, lt_on.value, y)
+                y -= cfg.PLT.PTD_SPACING
         
         self.ax_ptd.set_ylabel("High/Low")
         self.ax_ptd.set_xlabel("Unix Time (ns)")
@@ -157,7 +171,7 @@ class PTDiag(BaseManager):
 
         print("Generating PTD Stats Bar Graph...")
 
-        stats = self.get_stats()
+        stats = self.get_stats(graph=True)
         names, ptp_ids, num_edges, times_on, times_off, rates_on, rates_off = zip(*stats)
         
         x = np.arange(len(names))
@@ -168,7 +182,7 @@ class PTDiag(BaseManager):
         self.ax_edges.bar_label(edges_bar, padding=2)
         self.ax_edges.set_ylabel("n")
         self.ax_edges.set_xticks(x)
-        self.ax_edges.set_xticklabels(names, rotation=45)
+        self.ax_edges.set_xticklabels(names, rotation=315)
         self.ax_edges.set_title("Number of Edges")
 
         # Times
@@ -180,7 +194,7 @@ class PTDiag(BaseManager):
         self.ax_times.bar_label(times_off_bar, padding=2)
         self.ax_times.set_ylabel("Time (s)")
         self.ax_times.set_xticks(x)
-        self.ax_times.set_xticklabels(names, rotation=45)
+        self.ax_times.set_xticklabels(names, rotation=315)
         self.ax_times.set_title("Time Spent")
         self.ax_times.legend()
 
@@ -193,7 +207,7 @@ class PTDiag(BaseManager):
         self.ax_rates.bar_label(rates_off_bar, padding=2)
         self.ax_rates.set_ylabel("Rate (edge / s)")
         self.ax_rates.set_xticks(x)
-        self.ax_rates.set_xticklabels(names, rotation=45)
+        self.ax_rates.set_xticklabels(names, rotation=315)
         self.ax_rates.set_title("Edge Rate")
         self.ax_rates.legend()
 

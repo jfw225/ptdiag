@@ -1,6 +1,8 @@
 ADDRESS = ("", 64530)
 
 class PLT:
+    PTD_SPACING = 1.5
+    
     FIG_SAVE = "PTD"
     PTD_ID = 100
     PTD_SAVE = "ptd"
